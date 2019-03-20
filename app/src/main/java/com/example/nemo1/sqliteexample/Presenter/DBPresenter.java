@@ -28,6 +28,11 @@ public class DBPresenter implements SendData{
         dbProcess.getAllNote();
     }
 
+    public void addNote(Note note){
+        dbProcess = new DBProcess(context,this);
+        dbProcess.addNote(note);
+    }
+
     @Override
     public void onSearchId(int id) {
 
@@ -40,7 +45,7 @@ public class DBPresenter implements SendData{
 
     @Override
     public void onSendResult(String result) {
-
+        sendData.onSendResult(result);
     }
 
     @Override

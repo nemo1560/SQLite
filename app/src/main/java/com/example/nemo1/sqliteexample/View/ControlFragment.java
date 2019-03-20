@@ -1,6 +1,8 @@
 package com.example.nemo1.sqliteexample.View;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,11 +11,15 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.example.nemo1.sqliteexample.Adapter.NotesAdapter;
 import com.example.nemo1.sqliteexample.Entity.Note;
@@ -23,20 +29,16 @@ import com.example.nemo1.sqliteexample.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class ControlFragment extends Fragment implements View.OnClickListener,SendData {
     private DBPresenter dbPresenter;
-    private EditText search_text;
-    private Button search_btn;
+    private EditText search_text,title_AlerBuilder,content_AlertBuilder;
+    private Button search_btn,new_btn;
     private RecyclerView recyclerView;
     private SendData sendData;
     private List<Note> notes;
     private NotesAdapter notesAdapter;
-    private static final int MENU_ITEM_VIEW = 111;
-    private static final int MENU_ITEM_EDIT = 222;
-    private static final int MENU_ITEM_CREATE = 333;
-    private static final int MENU_ITEM_DELETE = 444;
-
     public ControlFragment() {
     }
 
@@ -51,29 +53,39 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
         View view = inflater.inflate(R.layout.fragment_control,container,false);
         search_text = view.findViewById(R.id.search_text);
         search_btn = view.findViewById(R.id.search_btn);
+        new_btn = view.findViewById(R.id.new_btn);
         recyclerView = view.findViewById(R.id.recycle_view);
         initEvent();
         return view;
     }
 
     private void initEvent() {
-
+        new_btn.setOnClickListener(this);
         search_btn.setOnClickListener(this);
     }
 
+    //Tao menu khi nhan giu trong recyclerView
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater menuInflater = getActivity().getMenuInflater();
+        menuInflater.inflate(R.menu.context_menu,menu);
         menu.setHeaderTitle("Select the action");
-        menu.add(0,MENU_ITEM_VIEW,0,"View note");
-        menu.add(0, MENU_ITEM_CREATE , 1, "Create Note");
-        menu.add(0, MENU_ITEM_EDIT , 2, "Edit Note");
-        menu.add(0, MENU_ITEM_DELETE, 4, "Delete Note");
     }
-
+    //Tao menu khi nhan giu trong recyclerView
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        return super.onContextItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.create:
+                Toast.makeText(getActivity(),"create",Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.view:
+                Toast.makeText(getActivity(),"view",Toast.LENGTH_SHORT).show();
+                return true;
+
+                default:
+                    return super.onContextItemSelected(item);
+        }
 
     }
 
@@ -89,6 +101,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
                 dbPresenter.getNote(Integer.valueOf(Id));
             }
         }
+        else if (v.getId() == new_btn.getId()){
+            customAlerBuilder();
+        }
     }
 
     @Override
@@ -103,28 +118,48 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
 
     @Override
     public void onSendResult(String result) {
-
+        customAlerBuilder();
     }
 
     @Override
     public void onSendListResult(List<Note> noteList) {
-        notesAdapter = new NotesAdapter(noteList);
+        notesAdapter = new NotesAdapter(noteList,this,getActivity());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(notesAdapter);
+        registerForContextMenu(recyclerView); //add menu (nhan giu) trong list
     }
 
     @Override
     public void onSendSingleResult(Note note) {
         notes = new ArrayList<>();
         notes.add(note);
-        if(notes.size() > 0){
-            notesAdapter = new NotesAdapter(notes);
-            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
-            linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-            recyclerView.setLayoutManager(linearLayoutManager);
-            recyclerView.setAdapter(notesAdapter);
-        }
+        notesAdapter = new NotesAdapter(notes,this,getActivity());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(notesAdapter);
+        registerForContextMenu(recyclerView); //add menu (nhan giu) trong list
+    }
+
+    //Custom parttern AlertBuilder
+    private void customAlerBuilder(){
+        final View view = View.inflate(getActivity(),R.layout.custom_alertbuilder,null);
+        title_AlerBuilder = view.findViewById(R.id.add_note_title);
+        content_AlertBuilder = view.findViewById(R.id.add_note_content);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Goi vao presenter -> model de xu ly add DB
+                dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
+                Note note = new Note(new Random().nextInt(1000),title_AlerBuilder.getText().toString(),content_AlertBuilder.getText().toString());
+                dbPresenter.addNote(note);
+            }
+        });
+        builder.setNegativeButton("No",null);
+        builder.create().show();
     }
 }

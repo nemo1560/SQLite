@@ -56,38 +56,48 @@ public class DBProcess extends SQLiteOpenHelper {
         sendData.onSendResult("Added");
     }
 
-    public Note getNote(int Id){
+    public void getNote(int Id){
         Note note = new Note();
         String[]column = {COLUMN_NOTEID,COLUMN_NOTE_TITLE,COLUMN_NOTE_CONTENT};
         String[]seletions = {String.valueOf(Id)};
         sqLiteDatabase = this.getReadableDatabase();
         //Query co dieu kien tim kiem
-        Cursor cursor = sqLiteDatabase.query(TABLE_NAME,column,COLUMN_NOTEID + "_?",seletions,null,null,null);
+        Cursor cursor = sqLiteDatabase.query(TABLE_NAME,column,COLUMN_NOTEID + "=?",seletions,null,null,null);
         if(cursor != null){
             cursor.moveToFirst();
-            note.setNoteId(Integer.getInteger(cursor.getString(0)));
-            note.setNoteTitle(cursor.getString(1));
-            note.setNoteContent(cursor.getString(2));
+            if(cursor.getCount() > 0){
+                note.setNoteId(cursor.getInt(0));
+                note.setNoteTitle(cursor.getString(1));
+                note.setNoteContent(cursor.getString(2));
+            }
+            else {
+                sendData.onSendResult("Null");
+            }
         }
         sendData.onSendSingleResult(note);
-        return note;
     }
 
-    public List<Note> getAllNote(){
-        Note note = new Note();
+    public void getAllNote(){
         List<Note> noteList = new ArrayList<>();
         sqLiteDatabase = this.getReadableDatabase();
         Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM "+TABLE_NAME,null);
         if(cursor != null){
             cursor.moveToFirst();
-            note.setNoteId(Integer.getInteger(cursor.getString(0)));
-            note.setNoteTitle(cursor.getString(1));
-            note.setNoteContent(cursor.getString(2));
-            noteList.add(note);
+            do {
+                Note note = new Note();
+                note.setNoteId(cursor.getInt(0));
+                note.setNoteTitle(cursor.getString(1));
+                note.setNoteContent(cursor.getString(2));
+                noteList.add(note);
+            }
+            while (cursor.moveToNext());
         }
-        while (cursor.moveToNext());
-        sendData.onSendListResult(noteList);
-        return noteList;
+        if(noteList.size() == 0){
+            sendData.onSendResult("No database");
+        }
+        else {
+            sendData.onSendListResult(noteList);
+        }
     }
 
     public void updateNote(Note note){
@@ -101,7 +111,7 @@ public class DBProcess extends SQLiteOpenHelper {
         sendData.onSendResult("Updated");
     }
 
-    public void DelNote(Note note){
+    public void delNote(Note note){
         sqLiteDatabase = this.getWritableDatabase();
         String[]seletions = {String.valueOf(note.getNoteId())};
         sqLiteDatabase.delete(TABLE_NAME,COLUMN_NOTEID+" _?",seletions);
