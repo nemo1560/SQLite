@@ -134,6 +134,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
         notes = new ArrayList<>();
         notes.add(note);
         notesAdapter = new NotesAdapter(notes,this,getActivity());
+        notesAdapter.notifyDataSetChanged();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
