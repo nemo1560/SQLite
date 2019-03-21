@@ -15,10 +15,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.nemo1.sqliteexample.Adapter.NotesAdapter;
@@ -157,9 +155,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
                 dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
                 Note note = new Note(new Random().nextInt(1000),title_AlerBuilder.getText().toString(),content_AlertBuilder.getText().toString());
                 dbPresenter.addNote(note);
+                builder.create().dismiss(); // tat bang thong bao nhap thong tin note moi.
             }
         });
         builder.setNegativeButton("No",null);
         builder.create().show();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 }
