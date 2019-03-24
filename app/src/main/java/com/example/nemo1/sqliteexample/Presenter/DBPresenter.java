@@ -38,9 +38,9 @@ public class DBPresenter implements SendData{
         dbProcess.delNote(Id);
     }
 
-    public void updateNote(int Id){
+    public void updateNote(Note note,int Id){
         dbProcess = new DBProcess(context,this);
-        dbProcess.updateNote(Id);
+        dbProcess.updateNote(note,Id);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class DBPresenter implements SendData{
 
     @Override
     public void onCallBack() {
-
+        //Ko su dung
     }
 
     @Override

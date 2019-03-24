@@ -36,6 +36,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
     private Button search_btn,new_btn;
     private RecyclerView recyclerView;
     private SendData sendData;
+    private Note note;
     private List<Note> notes;
     private NotesAdapter notesAdapter;
     private int selected = 0;
@@ -55,6 +56,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
         search_btn = view.findViewById(R.id.search_btn);
         new_btn = view.findViewById(R.id.new_btn);
         recyclerView = view.findViewById(R.id.recycle_view);
+        note = new Note();
         initEvent();
         return view;
     }
@@ -77,7 +79,9 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.edit:
-
+                dbPresenter = new DBPresenter(getActivity(),this);
+                dbPresenter.getNote(selected);
+                customAlertBuilder(note,selected,2); //2: update lai db
                 return true;
             case R.id.delete:
                 notiBuilderDeleteData();
@@ -101,7 +105,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
             }
         }
         else if (v.getId() == new_btn.getId()){
-            customAlertBuilderAddData();
+            customAlertBuilder(note,0,1);//1: add moi trong db
         }
     }
 
@@ -112,7 +116,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
 
     @Override
     public void onCallBack() {
-
+        //Ko su dung
     }
 
     //Interface nhan tat ca cac value String tra ve
@@ -140,6 +144,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
     public void onSendSingleResult(Note note) {
         notes = new ArrayList<>();
         notes.add(note);
+        this.note = note; // Luu lai entity de lay title,content da chon update trong AlertBuilder
         notesAdapter = new NotesAdapter(notes,this,getActivity());
         notesAdapter.notifyDataSetChanged();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
@@ -149,25 +154,39 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
         registerForContextMenu(recyclerView); //add menu (nhan giu) trong list
     }
 
-    //Custom layout cho AlertBuilder
-    private void customAlertBuilderAddData(){
-        final View view = View.inflate(getActivity(),R.layout.custom_alertbuilder,null);
+    //AlertBuilder de add note moi va update note chon
+    private void customAlertBuilder(final Note note, final int Id, final int choice){
+        View view = View.inflate(getActivity(),R.layout.custom_alertbuilder,null);
         title_AlerBuilder = view.findViewById(R.id.add_note_title);
         content_AlertBuilder = view.findViewById(R.id.add_note_content);
+        title_AlerBuilder.setText(note.getNoteTitle());
+        content_AlertBuilder.setText(note.getNoteContent());
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Goi vao presenter -> model de xu ly add DB
-                dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
-                Note note = new Note(new Random().nextInt(1000),title_AlerBuilder.getText().toString(),content_AlertBuilder.getText().toString());
-                dbPresenter.addNote(note);
-                builder.create().dismiss(); // tat bang thong bao nhap thong tin note moi.
-            }
-        })
-        .setNegativeButton("No",null)
-        .create().show();
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Goi vao presenter -> model de xu ly add DB
+                        if(choice == 2){
+                            dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
+                            note.setNoteId(new Random().nextInt(1000));
+                            note.setNoteTitle(title_AlerBuilder.getText().toString());
+                            note.setNoteContent(content_AlertBuilder.getText().toString());
+                            dbPresenter.updateNote(note,Id);
+                            builder.create().dismiss(); // tat bang thong bao nhap thong tin note moi.
+                        }
+                        else if (choice == 1){
+                            dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
+                            note.setNoteId(new Random().nextInt(1000));
+                            note.setNoteTitle(title_AlerBuilder.getText().toString());
+                            note.setNoteContent(content_AlertBuilder.getText().toString());
+                            dbPresenter.addNote(note);
+                            builder.create().dismiss(); // tat bang thong bao nhap thong tin note moi.
+                        }
+                    }
+                })
+                .setNegativeButton("No",null)
+                .create().show();
     }
 
     //tao thong bao co xoa data da chon
@@ -185,7 +204,6 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
                 .setNegativeButton("No",null)
                 .create().show();
     }
-
 
     @Override
     public void onDetach() {

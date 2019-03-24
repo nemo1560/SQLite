@@ -100,11 +100,10 @@ public class DBProcess extends SQLiteOpenHelper {
         }
     }
 
-    public void updateNote(int Id){
-        Note note = new Note();
+    public void updateNote(Note note,int Id){
         sqLiteDatabase = this.getWritableDatabase();
         String[]seletions = {String.valueOf(Id)};
-        ContentValues contentValues = new ContentValues();
+        ContentValues contentValues = new ContentValues(); // lay value de update lai db
         contentValues.put(COLUMN_NOTE_TITLE,note.getNoteTitle());
         contentValues.put(COLUMN_NOTE_CONTENT,note.getNoteContent());
         sqLiteDatabase.update(TABLE_NAME,contentValues,COLUMN_NOTEID+" =?",seletions);
