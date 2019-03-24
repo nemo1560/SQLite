@@ -3,6 +3,7 @@ package com.example.nemo1.sqliteexample;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.example.nemo1.sqliteexample.Entity.Note;
 import com.example.nemo1.sqliteexample.Interface.SendData;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements SendData {
 
     }
 
+    //Goi fragment ControlFragment
     @Override
     public void onCallBack() {
         fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -52,5 +54,11 @@ public class MainActivity extends AppCompatActivity implements SendData {
     @Override
     public void onSendSingleResult(Note note) {
 
+    }
+
+    @Override
+    protected void onStop() {
+        Toast.makeText(this,"Bye bye",Toast.LENGTH_SHORT).show();
+        super.onStop();
     }
 }

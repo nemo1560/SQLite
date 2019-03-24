@@ -20,6 +20,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.RecyclerView
     private List<Note> noteList;
     private SendData sendData;
     private Context context;
+    private int selectedId;
 
     public NotesAdapter(List<Note> noteList, SendData sendData,Context context) {
         this.noteList = noteList;
@@ -35,10 +36,16 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.RecyclerView
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerViewHoler recyclerViewHoler, int i) {
+    public void onBindViewHolder(@NonNull final RecyclerViewHoler recyclerViewHoler, final int i) {
         recyclerViewHoler.Id.setText(String.valueOf(noteList.get(i).getNoteId()));
         recyclerViewHoler.title.setText(noteList.get(i).getNoteTitle());
         recyclerViewHoler.content.setText(noteList.get(i).getNoteContent());
+        recyclerViewHoler.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendData.onSearchId(noteList.get(i).getNoteId());
+            }
+        });
     }
 
     @Override
@@ -51,7 +58,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.RecyclerView
                 title,
                 content;
 
-        public RecyclerViewHoler(@NonNull View itemView) {
+        public RecyclerViewHoler(@NonNull final View itemView) {
             super(itemView);
             Id = itemView.findViewById(R.id.Id);
             title = itemView.findViewById(R.id.title);

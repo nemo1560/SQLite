@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -37,6 +38,7 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
     private SendData sendData;
     private List<Note> notes;
     private NotesAdapter notesAdapter;
+    private int selected = 0;
     public ControlFragment() {
     }
 
@@ -74,13 +76,12 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.create:
-                Toast.makeText(getActivity(),"create",Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.view:
-                Toast.makeText(getActivity(),"view",Toast.LENGTH_SHORT).show();
-                return true;
+            case R.id.edit:
 
+                return true;
+            case R.id.delete:
+                notiBuilderDeleteData();
+                return true;
                 default:
                     return super.onContextItemSelected(item);
         }
@@ -100,13 +101,13 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
             }
         }
         else if (v.getId() == new_btn.getId()){
-            customAlerBuilder();
+            customAlertBuilderAddData();
         }
     }
 
     @Override
     public void onSearchId(int id) {
-
+        this.selected = id;
     }
 
     @Override
@@ -114,9 +115,15 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
 
     }
 
+    //Interface nhan tat ca cac value String tra ve
     @Override
     public void onSendResult(String result) {
-        customAlerBuilder();
+        if(result == "Deleted"){
+            Toast.makeText(getActivity(),"Deleted data",Toast.LENGTH_SHORT).show();
+        }
+        if (result == "Updated"){
+            Toast.makeText(getActivity(),"Updated data",Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -142,14 +149,14 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
         registerForContextMenu(recyclerView); //add menu (nhan giu) trong list
     }
 
-    //Custom parttern AlertBuilder
-    private void customAlerBuilder(){
+    //Custom layout cho AlertBuilder
+    private void customAlertBuilderAddData(){
         final View view = View.inflate(getActivity(),R.layout.custom_alertbuilder,null);
         title_AlerBuilder = view.findViewById(R.id.add_note_title);
         content_AlertBuilder = view.findViewById(R.id.add_note_content);
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(view);
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setView(view)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //Goi vao presenter -> model de xu ly add DB
@@ -158,10 +165,27 @@ public class ControlFragment extends Fragment implements View.OnClickListener,Se
                 dbPresenter.addNote(note);
                 builder.create().dismiss(); // tat bang thong bao nhap thong tin note moi.
             }
-        });
-        builder.setNegativeButton("No",null);
-        builder.create().show();
+        })
+        .setNegativeButton("No",null)
+        .create().show();
     }
+
+    //tao thong bao co xoa data da chon
+    private void notiBuilderDeleteData(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Delete data !")
+                .setMessage("Ban co dong y xoa data")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dbPresenter = new DBPresenter(getContext(),ControlFragment.this);
+                        dbPresenter.deleteNote(selected);
+                    }
+                })
+                .setNegativeButton("No",null)
+                .create().show();
+    }
+
 
     @Override
     public void onDetach() {

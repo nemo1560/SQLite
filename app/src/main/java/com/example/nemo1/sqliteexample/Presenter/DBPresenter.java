@@ -33,6 +33,16 @@ public class DBPresenter implements SendData{
         dbProcess.addNote(note);
     }
 
+    public void deleteNote(int Id){
+        dbProcess = new DBProcess(context,this);
+        dbProcess.delNote(Id);
+    }
+
+    public void updateNote(int Id){
+        dbProcess = new DBProcess(context,this);
+        dbProcess.updateNote(Id);
+    }
+
     @Override
     public void onSearchId(int id) {
 

@@ -100,21 +100,22 @@ public class DBProcess extends SQLiteOpenHelper {
         }
     }
 
-    public void updateNote(Note note){
+    public void updateNote(int Id){
+        Note note = new Note();
         sqLiteDatabase = this.getWritableDatabase();
-        String[]seletions = {String.valueOf(note.getNoteId())};
+        String[]seletions = {String.valueOf(Id)};
         ContentValues contentValues = new ContentValues();
         contentValues.put(COLUMN_NOTE_TITLE,note.getNoteTitle());
         contentValues.put(COLUMN_NOTE_CONTENT,note.getNoteContent());
-        sqLiteDatabase.update(TABLE_NAME,contentValues,COLUMN_NOTEID+" _?",seletions);
+        sqLiteDatabase.update(TABLE_NAME,contentValues,COLUMN_NOTEID+" =?",seletions);
         sqLiteDatabase.close();
         sendData.onSendResult("Updated");
     }
 
-    public void delNote(Note note){
+    public void delNote(int Id){
         sqLiteDatabase = this.getWritableDatabase();
-        String[]seletions = {String.valueOf(note.getNoteId())};
-        sqLiteDatabase.delete(TABLE_NAME,COLUMN_NOTEID+" _?",seletions);
+        String[]seletions = {String.valueOf(Id)};
+        sqLiteDatabase.delete(TABLE_NAME,COLUMN_NOTEID+" =?",seletions);
         sqLiteDatabase.close();
         sendData.onSendResult("Deleted");
     }
